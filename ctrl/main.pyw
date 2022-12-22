@@ -163,7 +163,7 @@ sca.grid(row=1, column=1, padx=0, pady=0, ipadx=100, ipady=0)
 proxy_btn.grid(row=2, column=0, padx=0, pady=10, ipadx=30, ipady=0)
 show_btn.grid(row=2, column=1, padx=0, pady=10, ipadx=30, ipady=0)
 sca.set(100)
-val.set('127.0.0.1:80')
+val.set('127.0.0.1:5000')
 
 last_send = time.time()
 

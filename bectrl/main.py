@@ -17,7 +17,7 @@ SCROLL_NUM = 5
 
 bufsize = 1024
 
-host = ('0.0.0.0', 80)
+host = ('0.0.0.0', 5000)
 soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 soc.bind(host)
 soc.listen(1)

@@ -4,3 +4,5 @@ build
 dist
 *.spec
 env
+node_modules
+package-lock.json
