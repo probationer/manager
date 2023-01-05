@@ -7,7 +7,7 @@ s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect((HOST, PORT))
 
 while True:
-    data = input("Client one enter your message: ")
+    data = input("Client two enter your message: ")
     s.send(data.encode('utf-8'))
     data = s.recv(1024)
     print(f"Received {data!r}")

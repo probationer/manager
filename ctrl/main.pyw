@@ -50,9 +50,10 @@ elif sys.platform == "darwin":
 elif platform.system() == "Linux":
     PLAT = b'x11'
 
+# ip address
+ip_address = '192.168.1.6:5000'
+
 # initialization socket
-
-
 def SetSocket():
     global soc, host_en
 
@@ -132,7 +133,7 @@ def ShowProxy():
     s5_lab.grid(row=0, column=0, padx=10, pady=10, ipadx=0, ipady=0)
     s5_en.grid(row=0, column=1, padx=10, pady=10, ipadx=40, ipady=0)
     s5_btn.grid(row=1, column=0, padx=10, pady=10, ipadx=30, ipady=0)
-    s5v.set("127.0.0.1:88")
+    s5v.set("192.168.1.6:88")
 
 
 def ShowScreen():
@@ -163,7 +164,7 @@ sca.grid(row=1, column=1, padx=0, pady=0, ipadx=100, ipady=0)
 proxy_btn.grid(row=2, column=0, padx=0, pady=10, ipadx=30, ipady=0)
 show_btn.grid(row=2, column=1, padx=0, pady=10, ipadx=30, ipady=0)
 sca.set(100)
-val.set('127.0.0.1:5000')
+val.set(ip_address)
 
 last_send = time.time()
 
@@ -231,8 +232,15 @@ def BindEvents(canvas):
     canvas.bind(sequence="<KeyPress>", func=KeyDown)
     canvas.bind(sequence="<KeyRelease>", func=KeyUp)
 
+def serverHandshake(conn):
+    conn.send(b'Ping')
+    response = conn.recv(1024)
+    print(' Connected with live server... ', response)
 
 def run():
+    # handshake with server 
+    serverHandshake(soc)
+
     global wscale, fixh, fixw, soc, showcan
     SetSocket()
     # Send platform information

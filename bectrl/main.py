@@ -17,7 +17,7 @@ SCROLL_NUM = 5
 
 bufsize = 1024
 
-host = ('0.0.0.0', 5000)
+host = ('127.0.0.1', 5000)
 soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 soc.bind(host)
 soc.listen(1)
@@ -33,6 +33,10 @@ lock = threading.Lock()
 # elif sys.platform == "darwin":
 #     from ._keyboard_osx import keycodeMapping
 
+def serverHandshake(conn):
+    conn.send(b'Ping')
+    response = conn.recv(1024)
+    print(' Connected with live server... ', response)
 
 def ctrl(conn):
     '''
@@ -105,6 +109,8 @@ imbyt = None
 
 
 def handle(conn):
+    # handshake with server 
+    serverHandshake(conn)
     global img, imbyt
     lock.acquire()
     if imbyt is None:
