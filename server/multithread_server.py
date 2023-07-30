@@ -1,17 +1,21 @@
 import socket
 from _thread import *
+import struct
+import time
 server_socket = socket.socket()
 
 host = "0.0.0.0"
 port = 5000
 ThreadCount = 0
-sender_ip = '192.168.1.5'
 connection_pool = dict()
 thread_ident_index = dict()
 client_mapping = {
     "0" : "1",
     "1" : "0"
 }
+HeaderSize = 10
+bufferSize = 10240
+max_size =  0
 
 try:
     server_socket.bind((host, port))
@@ -29,43 +33,60 @@ def create_sender_connection(sender_ip_address, sender_port=port):
     # print('sender address : ', address[0], address[1])
     return conn
 
+def proxy_data(sender_index, thread_ident, connection):
+    sending_connection = connection_pool[sender_index]
+    print('---------------------------')
+    print('1. Current Index : ', thread_ident_index[thread_ident])
+    print('2. Sender_index : ', sender_index)
+    print('3. Thread Id : ', thread_ident)
+    meta_values = connection.recv(5)
+    print('3.1 Meta value recieved ', meta_values)
+    if (len(meta_values)) >= 5 :
 
-def alternate_connection(index):
-    pass
-    return connection_pool[index]
+        print('3.2 got len of data : ', meta_values)
+        imtype, le = struct.unpack("<BI", meta_values)
+        print('4. data len from client : ',imtype, le)
+        imb = b''
+        while le > bufferSize:
+            t = connection.recv(bufferSize)
+            print(' Receving buffer ...')
+            imb += t
+            le -= len(t)
+        while le > 0:
+            t = connection.recv(le)
+            print(' Receving remaining buffer ...')
+            imb += t
+            le -= len(t)
 
+        print('5. length of recv data : ', len(imb))
+        
+        sending_connection.sendall(meta_values)
+        sending_connection.sendall(imb)
+    else:
+        print('5.1. value less than 5 : ', meta_values , ' | ',  len(meta_values))
+        time.sleep(2)
+        sending_connection.sendall(meta_values)
 
 def client_thread(connection):
+    global max_size
     thread_ident = get_ident()
     print("thread indent : ", thread_ident)
     connection_pool[str(ThreadCount-1)] = connection
     thread_ident_index[thread_ident] = str(ThreadCount-1)
 
-    # connection.send(b"welcome to the server")
-
-    for i in range(0,10000):
-        print('Loop iteration : ', i)
-        if i == 0: 
-            data = connection.recv(1024)
-            print('Data from client : ', data)
-            connection.send(data)
-            continue
+    while True:
         sender_index = client_mapping[thread_ident_index[thread_ident]]
-        sending_connection = connection_pool[sender_index]
-        print('Current Index : ', thread_ident_index[thread_ident])
-        print('sender_index : ', sender_index)
-        print('Thread Id : ', thread_ident)
-        data = connection.recv(1024)
-        print('Data from client : ', data)
-        if not data:
-            break
-        sending_connection.send(data)
-
-    sending_connection.close()
+        try:   
+            proxy_data(sender_index, thread_ident, connection)
+        except Exception as err:
+            print('6. Error! I guess no Sender ', err)
+            time.sleep(2)
+            proxy_data(sender_index, thread_ident, connection)
 
 
 while True:
     client, address = server_socket.accept()
+    # client.setblocking(0)
     print('client : ', client)
     print("connected to " + address[0] + str(address[1]))
     start_new_thread(client_thread, (client, ))

@@ -51,7 +51,7 @@ elif platform.system() == "Linux":
     PLAT = b'x11'
 
 # ip address
-ip_address = '192.168.1.6:5000'
+ip_address = '127.0.0.1:5000'
 
 # initialization socket
 def SetSocket():
@@ -238,14 +238,13 @@ def serverHandshake(conn):
     print(' Connected with live server... ', response)
 
 def run():
-    # handshake with server 
-    serverHandshake(soc)
-
     global wscale, fixh, fixw, soc, showcan
     SetSocket()
+
     # Send platform information
     soc.sendall(PLAT)
     lenb = soc.recv(5)
+    print(' Lenb : ', lenb)
     imtype, le = struct.unpack(">BI", lenb)
     imb = b''
     while le > bufsize:
@@ -256,6 +255,7 @@ def run():
         t = soc.recv(le)
         imb += t
         le -= len(t)
+
     data = np.frombuffer(imb, dtype=np.uint8)
     img = cv2.imdecode(data, cv2.IMREAD_COLOR)
     h, w, _ = img.shape

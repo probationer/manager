@@ -123,6 +123,7 @@ def handle(conn):
     lenb = struct.pack(">BI", 1, len(imbyt))
     conn.sendall(lenb)
     conn.sendall(imbyt)
+    conn.sendall(b'End')
     while True:
         # fix for linux
         time.sleep(IDLE)
@@ -150,15 +151,17 @@ def handle(conn):
             lenb = struct.pack(">BI", 0, l2)
             conn.sendall(lenb)
             conn.sendall(imb)
+            conn.sendall(b'End')
         else:
             # Pass the original encoded image
             lenb = struct.pack(">BI", 1, l1)
             conn.sendall(lenb)
             conn.sendall(imbyt)
+            conn.sendall(b'End')
 
 
 while True:
     conn, addr = soc.accept()
     threading.Thread(target=handle, args=(conn,)).start()
-    threading.Thread(target=ctrl, args=(conn,)).start()
-    print(' running loop ...')
+    # threading.Thread(target=ctrl, args=(conn,)).start()
+    print('Running loop ...')
